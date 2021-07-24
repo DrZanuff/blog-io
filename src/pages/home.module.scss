@@ -11,9 +11,24 @@
 
 }
 
+@keyframes create {
+    0% {
+        opacity: 0;
+        margin-top: 9rem;
+    }
+
+    100% {
+        opacity: 1.0;
+        margin-top: 0rem;
+    }
+}
+
 .post {
 
     margin-bottom: 3rem;
+    animation-name: create;
+    animation-duration: 1s;
+    animation-timing-function: ease-out;
 
     h1 {
         font-weight: bold;

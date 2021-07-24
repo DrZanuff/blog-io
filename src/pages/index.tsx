@@ -2,11 +2,17 @@ import { GetStaticProps } from 'next';
 import { ReactElement } from 'react';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import Link from 'next/link';
-import { getPrismicClient } from '../services/prismic';
+import Prismic from '@prismicio/client';
 
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+// import { useRef } from 'react';
 
 interface Post {
   uid?: string;
@@ -27,7 +33,45 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home(): ReactElement {
+export default function Home({
+  next_page,
+  results,
+}: PostPagination): ReactElement {
+  // const scroll = useRef(null);
+  const [nextPage, setNextPage] = useState<string | undefined>(next_page);
+  const [posts, setPosts] = useState(results);
+  const [triggerFech, setTriggerFetch] = useState(0);
+
+  function handleFetchMorePosts(): void {
+    setTriggerFetch(state => state + 0.01);
+  }
+  useEffect(() => {
+    async function fetchData(): Promise<void> {
+      fetch(nextPage)
+        .then(response => response.json())
+        .then(data => {
+          const newPost = {
+            uid: data.results[0].uid,
+            first_publication_date: format(
+              new Date(data.results[0].last_publication_date),
+              'dd MMM yyyy',
+              { locale: ptBR }
+            ),
+            data: {
+              title: data.results[0].data.title,
+              subtitle: data.results[0].data.subtitle,
+              author: data.results[0].data.author,
+            },
+          };
+          setNextPage(data.next_page);
+          setPosts([...posts, newPost]);
+          // scroll.current.scrollIntoView();
+        });
+    }
+
+    fetchData();
+  }, [triggerFech]);
+
   return (
     <>
       <header className={styles.heading}>
@@ -35,58 +79,64 @@ export default function Home(): ReactElement {
       </header>
 
       <main className={styles.content}>
-
-        <div className={styles.post}>
-          <h1>Como utilizar Hooks</h1>
-          <span className={styles.postTitle}>
-            Pensando em sincronização em vez de ciclos de vida.
-          </span>
-          <footer className={commonStyles.info}>
-            <FiCalendar />
-            <span>15 Mar 2021</span>
-            <FiUser />
-            <span>Joseph Oliveira</span>
-          </footer>
-        </div>
-
-        <div className={styles.post}>
-          <h1>Como utilizar Hooks</h1>
-          <span className={styles.postTitle}>
-            Pensando em sincronização em vez de ciclos de vida.
-          </span>
-          <footer className={commonStyles.info}>
-            <FiCalendar />
-            <span>15 Mar 2021</span>
-            <FiUser />
-            <span>Joseph Oliveira</span>
-          </footer>
-        </div>
-
-        <div className={styles.post}>
-          <h1>Como utilizar Hooks</h1>
-          <span className={styles.postTitle}>
-            Pensando em sincronização em vez de ciclos de vida.
-          </span>
-          <footer className={commonStyles.info}>
-            <FiCalendar />
-            <span>15 Mar 2021</span>
-            <FiUser />
-            <span>Joseph Oliveira</span>
-          </footer>
-        </div>
-
+        {posts.map(post => {
+          return (
+            <div className={styles.post} key={post.uid}>
+              <h1>{post.data.title}</h1>
+              <span className={styles.postTitle}>{post.data.subtitle}</span>
+              <footer className={commonStyles.info}>
+                <FiCalendar />
+                <span>{post.first_publication_date}</span>
+                <FiUser />
+                <span>{post.data.author}</span>
+              </footer>
+            </div>
+          );
+        })}
       </main>
 
-      <footer className={styles.foot}>
-        <button type="button">Carregar mais posts</button>
-      </footer>
+      {nextPage && (
+        <footer className={styles.foot}>
+          <button type="button" onClick={() => handleFetchMorePosts()}>
+            Carregar mais posts
+          </button>
+        </footer>
+      )}
+      {/* <div ref={scroll}></div> */}
     </>
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query(
+    [Prismic.predicates.at('document.type', 'posts')],
+    {
+      fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
+      pageSize: 1,
+    }
+  );
 
-//   // TODO
-// };
+  const posts = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: format(
+        new Date(post.last_publication_date),
+        'dd MMM yyyy',
+        { locale: ptBR }
+      ),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
+  });
+
+  return {
+    props: {
+      next_page: postsResponse.next_page,
+      results: posts,
+    },
+  };
+};
