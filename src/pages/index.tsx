@@ -34,13 +34,12 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home({
-  next_page,
-  results,
-}: PostPagination): ReactElement {
+export default function Home({ postsPagination }: HomeProps): ReactElement {
   // const scroll = useRef(null);
-  const [nextPage, setNextPage] = useState<string | undefined>(next_page);
-  const [posts, setPosts] = useState(results);
+  const [nextPage, setNextPage] = useState<string | undefined>(
+    postsPagination.next_page
+  );
+  const [posts, setPosts] = useState(postsPagination.results);
   const [triggerFech, setTriggerFetch] = useState(0);
 
   function handleFetchMorePosts(): void {
@@ -81,7 +80,7 @@ export default function Home({
         {posts.map(post => {
           return (
             <div className={styles.post} key={post.uid}>
-              <Link href={`/posts/${post.uid}`}>
+              <Link href={`/post/${post.uid}`}>
                 <a>{post.data.title}</a>
               </Link>
               <span className={styles.postTitle}>{post.data.subtitle}</span>
@@ -136,8 +135,10 @@ export const getStaticProps: GetStaticProps = async () => {
 
   return {
     props: {
-      next_page: postsResponse.next_page,
-      results: posts,
+      postsPagination: {
+        next_page: postsResponse.next_page,
+        results: posts,
+      },
     },
   };
 };
