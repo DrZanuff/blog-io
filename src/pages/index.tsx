@@ -9,6 +9,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { getPrismicClient } from '../services/prismic';
+import Header from '../components/Header';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
@@ -74,15 +75,15 @@ export default function Home({
 
   return (
     <>
-      <header className={styles.heading}>
-        <img src="/images/Logo.svg" alt="logo" />
-      </header>
+      <Header />
 
       <main className={styles.content}>
         {posts.map(post => {
           return (
             <div className={styles.post} key={post.uid}>
-              <h1>{post.data.title}</h1>
+              <Link href={`/posts/${post.uid}`}>
+                <a>{post.data.title}</a>
+              </Link>
               <span className={styles.postTitle}>{post.data.subtitle}</span>
               <footer className={commonStyles.info}>
                 <FiCalendar />
