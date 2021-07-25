@@ -1,6 +1,9 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Prismic from '@prismicio/client';
 import { ReactElement } from 'react';
+import { RichText } from 'prismic-dom';
+import ptBR from 'date-fns/locale/pt-BR';
+import { format } from 'date-fns';
 import { getPrismicClient } from '../../services/prismic';
 import Header from '../../components/Header';
 
@@ -29,41 +32,49 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post({ post }: PostProps): ReactElement {
-  console.log(post.data.content);
+interface Body {
+  text: string;
+  type: string;
+}
 
+export default function Post({ post }: PostProps): ReactElement {
   return (
     <>
       <Header />
-      <div>
+      <div className={styles.image}>
         <img src={post.data.banner.url} alt={post.data.title} />
       </div>
-      <h1>{post.data.title}</h1>
-      <div>
-        <span>{post.first_publication_date}</span>
-        <span>{post.data.author}</span>
-      </div>
-      <div>
-        {post.data.content.map(p => {
-          console.log(p);
-          return (
-            <div key={Math.random() * 100}>
-              <h2>{p.heading}</h2>
-              {p.body.map(b => {
-                if (b.type === 'list-item') {
-                  return (
-                    <p>
-                      <span>&nbsp;•&nbsp;&nbsp;</span>
-                      {b.text}
-                    </p>
-                  );
-                }
-                return <p>{b.text}</p>;
-              })}
-            </div>
-          );
-        })}
-      </div>
+      <main className={styles.main}>
+        <h1 className={styles.title}>{post.data.title}</h1>
+        <div>
+          <span>
+            {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+              locale: ptBR,
+            })}
+          </span>
+          <span>{post.data.author}</span>
+        </div>
+        <div>
+          {post.data.content.map(p => {
+            return (
+              <div key={Math.random() * 100}>
+                <h2>{p.heading}</h2>
+                {p.body.map(b => {
+                  if (b.type === 'list-item') {
+                    return (
+                      <p>
+                        <span>&nbsp;•&nbsp;&nbsp;</span>
+                        {b.text}
+                      </p>
+                    );
+                  }
+                  return <p>{b.text}</p>;
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </main>
     </>
   );
 }
@@ -100,5 +111,6 @@ export const getStaticProps: GetStaticProps = async context => {
     props: {
       post,
     },
+    revalidate: 60 * 30, // 30 Minutos
   };
 };
