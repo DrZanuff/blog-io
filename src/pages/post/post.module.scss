@@ -15,10 +15,50 @@
     margin: 0 auto 4rem;
     padding: 0 5rem;
 
-    .title {
-        margin-top: 4rem;
-        margin-bottom: 2rem;
+    .info {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        span {
+            margin-right: 1rem;
+        }
+        
+    }
+
+}
+
+.content_body{
+
+    h2 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
         padding: 0 auto;
     
     }
+
+    p {
+        margin: 1rem 0;
+    }
+
+    li {
+        margin-left: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    a {
+        color: var(--highilight);
+        transition: filter 0.1s;
+    }
+
+    a:hover {
+        filter: brightness(0.6);
+    }
+
+}
+
+.title {
+    margin-top: 4rem;
+    margin-bottom: 2rem;
+    padding: 0 auto;
+
 }

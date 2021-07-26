@@ -4,6 +4,8 @@ import { ReactElement } from 'react';
 import { RichText } from 'prismic-dom';
 import ptBR from 'date-fns/locale/pt-BR';
 import { format } from 'date-fns';
+import { BiCalendar, BiUser } from 'react-icons/bi';
+import { FiClock } from 'react-icons/fi';
 import { getPrismicClient } from '../../services/prismic';
 import Header from '../../components/Header';
 
@@ -32,9 +34,24 @@ interface PostProps {
   post: Post;
 }
 
-interface Body {
-  text: string;
-  type: string;
+function generateHtml(post: Post): Array<string> {
+  // eslint-disable-next-line prefer-const
+  let htmlArray = [];
+  for (let i = 0; i < post.data.content.length; i += 1) {
+    htmlArray.push(
+      <div className={styles.content_body}>
+        <h2>{post.data.content[i].heading}</h2>
+        <div
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: RichText.asHtml(post.data.content[i].body),
+          }}
+        />
+      </div>
+    );
+  }
+
+  return htmlArray;
 }
 
 export default function Post({ post }: PostProps): ReactElement {
@@ -46,34 +63,19 @@ export default function Post({ post }: PostProps): ReactElement {
       </div>
       <main className={styles.main}>
         <h1 className={styles.title}>{post.data.title}</h1>
-        <div>
+        <div className={styles.info}>
+          <BiCalendar />
           <span>
             {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
               locale: ptBR,
             })}
           </span>
+          <BiUser />
           <span>{post.data.author}</span>
+          <FiClock />
+          <span>4 min</span>
         </div>
-        <div>
-          {post.data.content.map(p => {
-            return (
-              <div key={Math.random() * 100}>
-                <h2>{p.heading}</h2>
-                {p.body.map(b => {
-                  if (b.type === 'list-item') {
-                    return (
-                      <p>
-                        <span>&nbsp;•&nbsp;&nbsp;</span>
-                        {b.text}
-                      </p>
-                    );
-                  }
-                  return <p>{b.text}</p>;
-                })}
-              </div>
-            );
-          })}
-        </div>
+        <div>{generateHtml(post).map(node => node)}</div>
       </main>
     </>
   );
