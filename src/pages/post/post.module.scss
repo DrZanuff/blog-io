@@ -62,3 +62,36 @@
     padding: 0 auto;
 
 }
+
+@keyframes rotate {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+
+.spin {
+    width: 2rem;
+    height: 2rem;
+    
+    border-radius: 16rem;
+    border-top: 5px solid white;
+
+    animation-name: rotate;
+    animation-duration: 500ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear; 
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    justify-items: center;
+    max-width: 1120px;
+    margin: 5rem auto 4rem;
+    padding: 0 5rem;
+}

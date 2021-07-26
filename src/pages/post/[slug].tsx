@@ -6,6 +6,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 import { format } from 'date-fns';
 import { BiCalendar, BiUser } from 'react-icons/bi';
 import { FiClock } from 'react-icons/fi';
+import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 import Header from '../../components/Header';
 
@@ -54,7 +55,28 @@ function generateHtml(post: Post): Array<string> {
   return htmlArray;
 }
 
+function getReadingTime(post: Post): number {
+  let wordCount = 0;
+
+  for (let i = 0; i < post.data.content.length; i += 1) {
+    wordCount += RichText.asHtml(post.data.content[i].body).split(' ').length;
+  }
+
+  return Math.ceil(wordCount / 200);
+}
+
 export default function Post({ post }: PostProps): ReactElement {
+  const router = useRouter();
+  // eslint-disable-next-line no-constant-condition
+  if (router.isFallback) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spin}> </div>
+        <div>Carregando...</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />
@@ -73,7 +95,7 @@ export default function Post({ post }: PostProps): ReactElement {
           <BiUser />
           <span>{post.data.author}</span>
           <FiClock />
-          <span>4 min</span>
+          <span>{getReadingTime(post)} min</span>
         </div>
         <div>{generateHtml(post).map(node => node)}</div>
       </main>
