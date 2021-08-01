@@ -9,6 +9,7 @@ import { FiClock } from 'react-icons/fi';
 import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 import Header from '../../components/Header';
+import Comments from '../../components/Comments';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
@@ -99,6 +100,7 @@ export default function Post({ post }: PostProps): ReactElement {
         </div>
         <div>{generateHtml(post).map(node => node)}</div>
       </main>
+      <Comments />
     </>
   );
 }

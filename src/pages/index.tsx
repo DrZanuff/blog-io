@@ -28,6 +28,7 @@ interface Post {
 interface PostPagination {
   next_page: string;
   results: Post[];
+  preview: boolean;
 }
 
 interface HomeProps {
@@ -103,17 +104,29 @@ export default function Home({ postsPagination }: HomeProps): ReactElement {
         </footer>
       )}
       {/* <div ref={scroll}></div> */}
+
+      {postsPagination.preview && (
+        <aside>
+          <Link href="/api/exit-preview">
+            <a>Sair do modo Preview</a>
+          </Link>
+        </aside>
+      )}
     </>
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps<HomeProps> = async ({
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
     [Prismic.predicates.at('document.type', 'posts')],
     {
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
       pageSize: 1,
+      ref: previewData?.ref ?? null,
     }
   );
 
@@ -138,6 +151,7 @@ export const getStaticProps: GetStaticProps = async () => {
       postsPagination: {
         next_page: postsResponse.next_page,
         results: posts,
+        preview,
       },
     },
   };
